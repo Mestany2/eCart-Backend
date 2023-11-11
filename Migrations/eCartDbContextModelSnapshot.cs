@@ -22,6 +22,59 @@ namespace eCart_Backend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("eCart_Backend.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CategoryImage")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryImage = "https://p2-ofp.static.pub/ShareResource/na/subseries/hero/lenovo-3i-chromebook-15-inch.png",
+                            CategoryName = "Laptops"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryImage = "https://i5.walmartimages.com/seo/Beats-Studio-Pro-Wireless-Headphones-Black_482fa5f9-4478-43a6-84ef-5abc2de71109.2d23bdd7708ce99a60e99d6a3750171c.png",
+                            CategoryName = "Headphones"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryImage = "https://d12mivgeuoigbq.cloudfront.net/magento-media/members/h0026-nicks-appliance/floating_appliances.png",
+                            CategoryName = "Appliances"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryImage = "https://img.xfinitymobile.com/image/upload/c_fit,f_auto,q_auto,fl_lossy/v1696609940/client/v2/images/Apple-iPhone-15-Pro-BAU-Shop-Apple-LP-Placement/Shop_Banner_1280.png",
+                            CategoryName = "Phones"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryImage = "https://img.bbystatic.com/BestBuy_US/store/ee/2017/cam/pr/sol-11219-nikon/sol-11219-nikon-d610-dslr-camera-rev.png",
+                            CategoryName = "Cameras"
+                        });
+                });
+
             modelBuilder.Entity("eCart_Backend.Models.Item", b =>
                 {
                     b.Property<int>("Id")
@@ -29,6 +82,9 @@ namespace eCart_Backend.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -53,6 +109,8 @@ namespace eCart_Backend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Items");
@@ -61,8 +119,9 @@ namespace eCart_Backend.Migrations
                         new
                         {
                             Id = 1,
+                            CategoryId = 4,
                             Description = "First Item in the store",
-                            Image = "Test",
+                            Image = "https://phones.mintmobile.com/wp-content/uploads/2023/09/Apple_iPhone_15_Pro_Titanium_Blue_PDP_Image.png",
                             Name = "Iphone",
                             Price = 14.99m,
                             Quantity = 10,
@@ -71,8 +130,9 @@ namespace eCart_Backend.Migrations
                         new
                         {
                             Id = 2,
+                            CategoryId = 2,
                             Description = "Second Item in the store",
-                            Image = "Test",
+                            Image = "https://pdp.com/cdn/shop/files/052-003_PS5_GAMBITWIRELESS_LEFTQUARTERSHOT.png?v=1696884972&width=640",
                             Name = "Headset",
                             Price = 40.99m,
                             Quantity = 12,
@@ -81,8 +141,9 @@ namespace eCart_Backend.Migrations
                         new
                         {
                             Id = 3,
+                            CategoryId = 5,
                             Description = "Third Item in the store",
-                            Image = "Test",
+                            Image = "https://i1.adis.ws/i/canon/15_eos_90d_bk_thefront_ef-s18-135mm_3.5-5.6isusm_square_6bd191e26825499fb5fe88e57a763f7a",
                             Name = "Camera",
                             Price = 414.99m,
                             Quantity = 15,
@@ -98,13 +159,13 @@ namespace eCart_Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("OrderDate")
+                    b.Property<DateTime?>("OrderDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal?>("OrderTotal")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("PaymentId")
+                    b.Property<int?>("PaymentId")
                         .HasColumnType("integer");
 
                     b.Property<int>("StatusId")
@@ -283,7 +344,7 @@ namespace eCart_Backend.Migrations
                             Email = "Mdaniel@gmail.com",
                             Name = "Mike Daniel",
                             Phone = "615-645-2415",
-                            Uid = "4d53246asd6",
+                            Uid = "wLR4RTEAKyUr6K8w9ufj1IZM1hC3",
                             isSeller = false
                         },
                         new
@@ -315,11 +376,19 @@ namespace eCart_Backend.Migrations
 
             modelBuilder.Entity("eCart_Backend.Models.Item", b =>
                 {
+                    b.HasOne("eCart_Backend.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("eCart_Backend.Models.User", "User")
                         .WithMany("Items")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("User");
                 });
@@ -328,9 +397,7 @@ namespace eCart_Backend.Migrations
                 {
                     b.HasOne("eCart_Backend.Models.Payment", "Payment")
                         .WithMany()
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PaymentId");
 
                     b.HasOne("eCart_Backend.Models.Status", "Status")
                         .WithMany()

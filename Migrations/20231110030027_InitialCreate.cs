@@ -11,6 +11,20 @@ namespace eCart_Backend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryName = table.Column<string>(type: "text", nullable: false),
+                    CategoryImage = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -65,11 +79,18 @@ namespace eCart_Backend.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Items", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Items_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Items_Users_UserId",
                         column: x => x.UserId,
@@ -84,8 +105,8 @@ namespace eCart_Backend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    PaymentId = table.Column<int>(type: "integer", nullable: false),
+                    OrderDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    PaymentId = table.Column<int>(type: "integer", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     OrderTotal = table.Column<decimal>(type: "numeric", nullable: true),
                     StatusId = table.Column<int>(type: "integer", nullable: false)
@@ -97,8 +118,7 @@ namespace eCart_Backend.Migrations
                         name: "FK_Orders_Payments_PaymentId",
                         column: x => x.PaymentId,
                         principalTable: "Payments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Orders_Status_StatusId",
                         column: x => x.StatusId,
@@ -117,12 +137,14 @@ namespace eCart_Backend.Migrations
                 name: "ItemOrder",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     itemsId = table.Column<int>(type: "integer", nullable: false),
                     ordersId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ItemOrder", x => new { x.itemsId, x.ordersId });
+                    table.PrimaryKey("PK_ItemOrder", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ItemOrder_Items_itemsId",
                         column: x => x.itemsId,
@@ -135,6 +157,18 @@ namespace eCart_Backend.Migrations
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "CategoryImage", "CategoryName" },
+                values: new object[,]
+                {
+                    { 1, "https://p2-ofp.static.pub/ShareResource/na/subseries/hero/lenovo-3i-chromebook-15-inch.png", "Laptops" },
+                    { 2, "https://i5.walmartimages.com/seo/Beats-Studio-Pro-Wireless-Headphones-Black_482fa5f9-4478-43a6-84ef-5abc2de71109.2d23bdd7708ce99a60e99d6a3750171c.png", "Headphones" },
+                    { 3, "https://d12mivgeuoigbq.cloudfront.net/magento-media/members/h0026-nicks-appliance/floating_appliances.png", "Appliances" },
+                    { 4, "https://img.xfinitymobile.com/image/upload/c_fit,f_auto,q_auto,fl_lossy/v1696609940/client/v2/images/Apple-iPhone-15-Pro-BAU-Shop-Apple-LP-Placement/Shop_Banner_1280.png", "Phones" },
+                    { 5, "https://img.bbystatic.com/BestBuy_US/store/ee/2017/cam/pr/sol-11219-nikon/sol-11219-nikon-d610-dslr-camera-rev.png", "Cameras" }
                 });
 
             migrationBuilder.InsertData(
@@ -163,18 +197,18 @@ namespace eCart_Backend.Migrations
                 values: new object[,]
                 {
                     { 1, "123 Street", "jack@yahoo.com", "Jack Smith", "615-445-8855", "4d5256236asd6", true },
-                    { 2, "856 Road", "Mdaniel@gmail.com", "Mike Daniel", "615-645-2415", "4d53246asd6", false },
+                    { 2, "856 Road", "Mdaniel@gmail.com", "Mike Daniel", "615-645-2415", "wLR4RTEAKyUr6K8w9ufj1IZM1hC3", false },
                     { 3, "789 Circle", "sbutler@comcast.net", "Steve Butler", "615-746-3641", "4d56a2526sd6", true }
                 });
 
             migrationBuilder.InsertData(
                 table: "Items",
-                columns: new[] { "Id", "Description", "Image", "Name", "Price", "Quantity", "UserId" },
+                columns: new[] { "Id", "CategoryId", "Description", "Image", "Name", "Price", "Quantity", "UserId" },
                 values: new object[,]
                 {
-                    { 1, "First Item in the store", "Test", "Iphone", 14.99m, 10, 1 },
-                    { 2, "Second Item in the store", "Test", "Headset", 40.99m, 12, 2 },
-                    { 3, "Third Item in the store", "Test", "Camera", 414.99m, 15, 1 }
+                    { 1, 4, "First Item in the store", "https://phones.mintmobile.com/wp-content/uploads/2023/09/Apple_iPhone_15_Pro_Titanium_Blue_PDP_Image.png", "Iphone", 14.99m, 10, 1 },
+                    { 2, 2, "Second Item in the store", "https://pdp.com/cdn/shop/files/052-003_PS5_GAMBITWIRELESS_LEFTQUARTERSHOT.png?v=1696884972&width=640", "Headset", 40.99m, 12, 2 },
+                    { 3, 5, "Third Item in the store", "https://i1.adis.ws/i/canon/15_eos_90d_bk_thefront_ef-s18-135mm_3.5-5.6isusm_square_6bd191e26825499fb5fe88e57a763f7a", "Camera", 414.99m, 15, 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -192,6 +226,11 @@ namespace eCart_Backend.Migrations
                 name: "IX_ItemOrder_ordersId",
                 table: "ItemOrder",
                 column: "ordersId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Items_CategoryId",
+                table: "Items",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Items_UserId",
@@ -224,6 +263,9 @@ namespace eCart_Backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Payments");
