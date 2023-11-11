@@ -266,4 +266,42 @@ app.MapGet("/api/allPayments", (eCartDbContext db) =>
 }
 );
 
+//View order's items
+app.MapGet("/api/OrderDetails/{id}", (eCartDbContext db, int id) =>
+{
+    var getOrder = db.Orders.Where(o => o.Id == id).Include(x => x.items).FirstOrDefault();
+    if (getOrder != null)
+    {
+        var items = getOrder.items.ToList();
+        return Results.Ok(items);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
+
+}
+);
+
+//update item
+app.MapPut("/api/items/{id}", (eCartDbContext db, int id, Item item) =>
+{
+    Item itemToUpdate = db.Items.SingleOrDefault(product => product.Id == id);
+    if (itemToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    itemToUpdate.Name = item.Name;
+    itemToUpdate.Price = item.Price;
+    itemToUpdate.Description = item.Description;
+    itemToUpdate.Quantity = item.Quantity;
+    itemToUpdate.Image = item.Image;
+    itemToUpdate.CategoryId = item.CategoryId;
+    itemToUpdate.UserId = item.UserId;
+
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
 app.Run();
