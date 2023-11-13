@@ -250,6 +250,15 @@ app.MapGet("/api/allCategories", (eCartDbContext db) =>
 }
 );
 
+
+//Get all Statuses
+app.MapGet("/api/allStatuses", (eCartDbContext db) =>
+{
+
+    return db.Status;
+}
+);
+
 //Get Items by Category
 app.MapGet("api/getCategoryItems/{id}", (eCartDbContext db, int id) =>
 {
@@ -274,6 +283,22 @@ app.MapGet("/api/OrderDetails/{id}", (eCartDbContext db, int id) =>
     {
         var items = getOrder.items.ToList();
         return Results.Ok(items);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
+
+}
+);
+
+//Get order by Id
+app.MapGet("/api/OrderById/{id}", (eCartDbContext db, int id) =>
+{
+    var getOrder = db.Orders.Where(o => o.Id == id).FirstOrDefault();
+    if (getOrder != null)
+    {
+        return Results.Ok(getOrder);
     }
     else
     {
